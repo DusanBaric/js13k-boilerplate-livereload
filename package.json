@@ -1,0 +1,29 @@
+{
+  "name": "js13k_boilerplate_livereload",
+  "version": "0.1.0",
+  "description": "Js13K boilerplate with live reload",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run dev",
+    "dev": "gulp start-dev",
+    "build": "gulp build",
+    "dist": "gulp build-dist"
+  },
+  "author": "Dusan Baric",
+  "license": "MIT",
+  "devDependencies": {
+    "del": "^5.0.0",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-file-include": "^2.1.0",
+    "gulp-imagemin": "^6.0.0",
+    "gulp-include": "^2.4.1",
+    "gulp-livereload": "^4.0.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-size": "^3.0.0",
+    "gulp-terser": "^1.2.0",
+    "gulp-zip": "^5.0.0"
+  }
+}
