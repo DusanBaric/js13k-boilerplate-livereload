@@ -22,7 +22,7 @@ const buildAssets = () => {
   del.sync(['temp/**']);
 
   return gulp.src('src/assets/**/*')
-    .pipe(imagemin(config.minify_assets))
+    .pipe(gulpif(!config.minify_assets, imagemin(config.minify_assets_config)))
     .pipe(size(config.size))
     .pipe(gulp.dest('temp/assets'));
 }
@@ -30,7 +30,7 @@ const buildAssets = () => {
 const buildCss = (_dev) => () => {
   return gulp.src('src/css/*.css')
     .pipe(concat('style.css'))
-    .pipe(gulpif(!_dev, replace(config.regex.stripDev, '')))
+    .pipe(gulpif(!_dev, replace(config.regex.strip_dev, '')))
     .pipe(gulpif(!_dev, cleanCSS(config.minify_css)))
     .pipe(size(config.size))
     .pipe(gulp.dest('temp'));
@@ -39,7 +39,7 @@ const buildCss = (_dev) => () => {
 const buildJs = (_dev) => () => {
   return gulp.src('src/js/main.js')
     .pipe(include())
-    .pipe(gulpif(!_dev, replace(config.regex.stripDev, '')))
+    .pipe(gulpif(!_dev, replace(config.regex.strip_dev, '')))
     .pipe(gulpif(!_dev, terser(config.minify_js)))
     .pipe(rename("game.js"))
     .pipe(size(config.size))
@@ -51,12 +51,12 @@ const buildHtml = (_dev) => () => {
 
   return gulp.src('src/template.html')
     .pipe(html(config.build_html))
-    .pipe(replace(config.regex.copyStyle, `<style>${style}$1</style>`))
+    .pipe(replace(config.regex.copy_style, `<style>${style}$1</style>`))
     .pipe(gulpMinifyCssNames({
       prefix: '__',
       postfix: '_'
     }))
-    .pipe(gulpif(!_dev, replace(config.regex.stripHtmlDev, '')))
+    .pipe(gulpif(!_dev, replace(config.regex.strip_html_dev, '')))
     .pipe(gulpif(!_dev, htmlmin({ collapseWhitespace: true })))
     .pipe(rename("index.html"))
     .pipe(gulp.dest('temp'))
