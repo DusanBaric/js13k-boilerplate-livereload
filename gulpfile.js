@@ -22,7 +22,7 @@ const buildAssets = () => {
   del.sync(['temp/**']);
 
   return gulp.src('src/assets/**/*')
-    .pipe(gulpif(!config.minify_assets, imagemin(config.minify_assets_config)))
+    .pipe(gulpif(config.minify_assets, imagemin(config.minify_assets_config)))
     .pipe(size(config.size))
     .pipe(gulp.dest('temp/assets'));
 }
