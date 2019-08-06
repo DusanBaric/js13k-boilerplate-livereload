@@ -12,7 +12,11 @@ const html = require('gulp-file-include');
 const livereload = require('gulp-livereload');
 const cleanCSS = require('gulp-clean-css');
 const imagemin = require('gulp-imagemin');
+const gulpif = require('gulp-if');
+const open = require('gulp-open');
 const fs = require('fs');
+const gulpMinifyCssNames = require('gulp-minify-cssnames');
+const htmlmin = require('gulp-htmlmin');
 
 const buildAssets = () => {
   del.sync(['temp/**']);
@@ -23,31 +27,40 @@ const buildAssets = () => {
     .pipe(gulp.dest('temp/assets'));
 }
 
-const buildCss = () => {
+const buildCss = (_dev) => () => {
   return gulp.src('src/css/*.css')
     .pipe(concat('style.css'))
-    .pipe(cleanCSS(config.minify_css))
+    .pipe(gulpif(!_dev, replace(config.regex.stripDev, '')))
+    .pipe(gulpif(!_dev, cleanCSS(config.minify_css)))
     .pipe(size(config.size))
     .pipe(gulp.dest('temp'));
 }
 
-const buildJs = () => {
+const buildJs = (_dev) => () => {
   return gulp.src('src/js/main.js')
     .pipe(include())
-    .pipe(terser(config.minify_js))
+    .pipe(gulpif(!_dev, replace(config.regex.stripDev, '')))
+    .pipe(gulpif(!_dev, terser(config.minify_js)))
     .pipe(rename("game.js"))
     .pipe(size(config.size))
     .pipe(gulp.dest('temp'));
 }
 
-const buildHtml = () => {
+const buildHtml = (_dev) => () => {
   const style = fs.readFileSync('temp/style.css').toString();
 
   return gulp.src('src/template.html')
-    .pipe(replace(/<style>([\s\S]*)<\/style>/gi, `<style>${style}$1</style>`))
-    .pipe(html(config.minify_html))
+    .pipe(html(config.build_html))
+    .pipe(replace(config.regex.copyStyle, `<style>${style}$1</style>`))
+    .pipe(gulpMinifyCssNames({
+      prefix: '__',
+      postfix: '_'
+    }))
+    .pipe(gulpif(!_dev, replace(config.regex.stripHtmlDev, '')))
+    .pipe(gulpif(!_dev, htmlmin({ collapseWhitespace: true })))
     .pipe(rename("index.html"))
     .pipe(gulp.dest('temp'))
+    .pipe(gulpif(_dev, open('temp/index.html')))
     .pipe(livereload({}));
 }
 
@@ -74,15 +87,18 @@ const pack = (done) => {
 }
 
 gulp.task('build-assets', buildAssets);
-gulp.task('build-css', buildCss);
-gulp.task('build-js', buildJs);
-gulp.task('build-html', gulp.series(['build-assets', 'build-css', 'build-js'], buildHtml));
+gulp.task('build-css', buildCss(false));
+gulp.task('build-js', buildJs(false));
+gulp.task('build-dev-css', buildCss(true));
+gulp.task('build-dev-js', buildJs(true));
+gulp.task('build-html', gulp.series(['build-assets', 'build-css', 'build-js'], buildHtml(false)));
+gulp.task('build-dev-html', gulp.series(['build-assets', 'build-dev-css', 'build-dev-js'], buildHtml(true)));
 gulp.task('copy', gulp.series(['build-html'], copy));
 gulp.task('build', gulp.series(['copy'], clear));
 gulp.task('pack', gulp.series(['copy'], pack));
 gulp.task('build-dist', gulp.series(['pack'], clear));
 
-gulp.task('start-dev', gulp.series(['build-html'], () => {
+gulp.task('start-dev', gulp.series(['build-dev-html'], () => {
   livereload.listen(config.livereload);
-  gulp.watch('src/**/*', gulp.series(['build-html']));
+  gulp.watch('src/**/*', gulp.series(['build-dev-html']));
 }));

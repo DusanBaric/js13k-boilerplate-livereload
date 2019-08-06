@@ -2,6 +2,12 @@ const imagemin = require('gulp-imagemin');
 
 module.exports = {
     name: 'Js13K',
+    regex: {
+        copyStyle: /<style>([\s\S]*)<\/style>/gi,
+        stripDev: /\/\*\s*DEV_BEGIN\s*\*\/([\s\S]*)\/\*\s*DEV_END\s*\*\//gi,
+        stripHtmlDev: /\<\!--\s*DEV_BEGIN\s*--\>([\s\S]*)\<\!--\s*DEV_END\s*--\>/gi,
+        minifyClasses: /__([\s\S]*)_/gi
+    },
     size: {
         pretty: true,
         showFiles: true,
@@ -15,7 +21,7 @@ module.exports = {
     },
     minify_css: {
     },
-    minify_html: {
+    build_html: {
         prefix: '@@',
         basepath: '@file'
     },
